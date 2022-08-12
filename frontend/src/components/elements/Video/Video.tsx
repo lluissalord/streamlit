@@ -45,7 +45,7 @@ export default function Video({ element, width }: VideoProps): ReactElement {
            initially HTML video has height 0 and when tabs are switched page auto scrolls up
            because of "lack of content" on the page, setting height of HTML video element fixes it
          */
-        videoNode.height = videoNode.videoHeight
+        videoNode.height = width !== 0 ? width * 0.75 : 528
       }
     }
 

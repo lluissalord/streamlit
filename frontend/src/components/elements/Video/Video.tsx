@@ -20,6 +20,8 @@ import AppContext from "src/components/core/AppContext"
 import { Video as VideoProto } from "src/autogen/proto"
 import { buildMediaUri } from "src/lib/UriUtil"
 
+const DEFAULT_HEIGHT = 528
+
 export interface VideoProps {
   width: number
   element: VideoProto
@@ -36,26 +38,20 @@ export default function Video({ element, width }: VideoProps): ReactElement {
   useEffect(() => {
     const videoNode = videoRef.current
 
-    const onLoadedMetadata: () => void = () => {
+    const setStartTime: () => void = () => {
       if (videoNode) {
         // setStartTime
         videoNode.currentTime = element.startTime
-
-        /* height of HTML video element needs to be set to avoid scrolling issue: https://github.com/streamlit/streamlit/issues/5069
-           initially HTML video has height 0 and when tabs are switched page auto scrolls up
-           because of "lack of content" on the page, setting height of HTML video element fixes it
-         */
-        videoNode.height = width !== 0 ? width * 0.75 : 528
       }
     }
 
     if (videoNode) {
-      videoNode.addEventListener("loadedmetadata", onLoadedMetadata)
+      videoNode.addEventListener("loadedmetadata", setStartTime)
     }
 
     return () => {
       if (videoNode) {
-        videoNode.removeEventListener("loadedmetadata", onLoadedMetadata)
+        videoNode.removeEventListener("loadedmetadata", setStartTime)
       }
     }
   }, [element])
@@ -78,7 +74,7 @@ export default function Video({ element, width }: VideoProps): ReactElement {
     // https://github.com/streamlit/streamlit/issues/5069
     // To avoid this, when we detect width is 0, we set height to 528,
     // which is default height based on the default streamlit width
-    const height = width !== 0 ? width * 0.75 : 528
+    const height = width !== 0 ? width * 0.75 : DEFAULT_HEIGHT
 
     return (
       <iframe
@@ -99,7 +95,7 @@ export default function Video({ element, width }: VideoProps): ReactElement {
       controls
       src={buildMediaUri(url, getBaseUriParts())}
       className="stVideo"
-      style={{ width }}
+      style={{ width, height: width === 0 ? DEFAULT_HEIGHT : undefined }}
     />
   )
 }
